@@ -1,0 +1,724 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Size Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #004494;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f5ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .result h2 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .result p {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-container input[type="range"] {
+            width: 100%;
+        }
+
+        .slider-label {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            input[type="submit"] {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    <script>
+        function formatHeight(inches) {
+            const feet = Math.floor(inches / 12);
+            const remainingInches = inches % 12;
+            return `${feet}'${remainingInches}"`;
+        }
+
+        function updateHeightDisplay(value) {
+            const formattedHeight = formatHeight(value);
+            document.getElementById("heightDisplay").innerText = formattedHeight;
+            document.getElementById("Height").value = formattedHeight;
+        }
+
+        function validateForm() {
+            var gender = document.getElementById("Gender").value;
+            var height = document.getElementById("Height").value;
+            var cupSize = document.getElementById("Cup Size").value.trim().toUpperCase();
+
+            var genderFormatted = gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
+
+            if (genderFormatted !== "Male" && genderFormatted !== "Female") {
+                alert("Please enter 'Male' or 'Female' for gender.");
+                return false;
+            }
+
+            var heightRegex = /^\d{1,2}'\d{1,2}"$/;
+            if (!heightRegex.test(height)) {
+                alert("Height must be in the format e.g., 5'7\"");
+                return false;
+            }
+
+            var cupSizeRequired = genderFormatted === "Female";
+            var cupSizeRegex = /^[A-Z]$/;
+            if (cupSizeRequired && !cupSizeRegex.test(cupSize)) {
+                alert("If gender is Female, Cup Size must be a single character (A-Z).");
+                return false;
+            }
+
+            if (cupSizeRequired && !cupSize) {
+                alert("Cup Size is required for Female.");
+                return false;
+            }
+
+            document.getElementById("Gender").value = genderFormatted;
+            document.getElementById("Cup Size").value = cupSize;
+
+            return true;
+        }
+
+        function toggleCupSizeRequirement() {
+            const gender = document.getElementById("Gender").value;
+            const cupSizeField = document.getElementById("Cup Size");
+
+            if (gender === "Female") {
+                cupSizeField.required = true;
+            } else {
+                cupSizeField.required = false;
+            }
+        }
+
+        function displayResult(size) {
+            var resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = `<h2>Predicted Size</h2><p>Your predicted size is: ${size}</p>`;
+            resultDiv.style.display = "block";
+        }
+
+        document.querySelector("form").onsubmit = function (event) {
+            event.preventDefault();
+            const size = "M (Medium)"; // Replace with actual size prediction logic
+            displayResult(size);
+        };
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Size Predictor</h1>
+        <form action="/predict" method="post" onsubmit="return validateForm()">
+            <label for="Gender">Gender:</label>
+            <select id="Gender" name="Gender" required onchange="toggleCupSizeRequirement()">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+
+            <label for="Height">Height (in inches):</label>
+            <div class="slider-container">
+                <input type="range" id="heightSlider" min="48" max="84" step="1" value="66"
+                    oninput="updateHeightDisplay(this.value)">
+                <span id="heightDisplay" class="slider-label">5'6"</span>
+            </div>
+            <input type="hidden" id="Height" name="Height" value="66">
+
+            <label for="Weight">Weight (in kg):</label>
+            <input type="number" step="0.1" id="Weight" name="Weight" required>
+
+            <label for="Bust/Chest">Bust/Chest measurement (in inches):</label>
+            <input type="number" step="0.1" id="Bust/Chest" name="Bust/Chest" required>
+
+            <label for="Cup Size">Cup Size:</label>
+            <input type="text" id="Cup Size" name="Cup Size" maxlength="1" pattern="[A-Z]"
+                oninput="this.value = this.value.toUpperCase()">
+
+            <label for="Waist">Waist measurement (in inches, range 20-50):</label>
+            <input type="number" step="0.1" id="Waist" name="Waist" min="20" max="50" required>
+
+            <label for="Hips">Hips measurement (in inches, range 20-50):</label>
+            <input type="number" step="0.1" id="Hips" name="Hips" min="20" max="50" required>
+
+            <label for="Body Shape Index">Body Shape Index (0-4):</label>
+            <input type="number" min="0" max="4" id="Body Shape Index" name="Body Shape Index" required>
+
+            <input type="submit" value="Predict Size">
+        </form>
+
+
+        <div id="result" class="result" style="display: none;">
+
+        </div>
+    </div>
+
+    <script>
+        // Set initial height display on page load
+        updateHeightDisplay(document.getElementById("heightSlider").value);
+    </script>
+</body>
+
+</html> -->
+
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Size Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #004494;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f5ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        }
+
+        .result h2 {
+            color: #333;
+        }
+
+        .result p {
+            font-size: 16px;
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            input[type="submit"] {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Size Predictor</h1>
+        <form action="/predict" method="post" onsubmit="return validateForm()">
+            <label for="Gender">Gender:</label>
+            <select id="Gender" name="Gender" required onchange="toggleCupSizeRequirement()">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+
+            <label for="Height">Height (in inches, e.g., 5'7"):</label>
+            <input type="text" id="Height" name="Height" required>
+
+            <label for="Weight">Weight (in kg):</label>
+            <input type="number" step="0.1" id="Weight" name="Weight" required>
+
+            <label for="Bust/Chest">Bust/Chest measurement (in inches):</label>
+            <input type="number" step="0.1" id="Bust/Chest" name="Bust/Chest" required>
+
+            <label for="Cup Size">Cup Size:</label>
+            <input type="text" id="Cup Size" name="Cup Size" maxlength="1" pattern="[A-Z]"
+                oninput="this.value = this.value.toUpperCase()">
+
+            <label for="Waist">Waist measurement (in inches, range 20-50):</label>
+            <input type="number" step="0.1" id="Waist" name="Waist" min="20" max="50" required>
+
+            <label for="Hips">Hips measurement (in inches, range 20-50):</label>
+            <input type="number" step="0.1" id="Hips" name="Hips" min="20" max="50" required>
+
+            <label for="Body Shape Index">Body Shape Index (0-4):</label>
+            <input type="number" min="0" max="4" id="Body Shape Index" name="Body Shape Index" required>
+
+            <input type="submit" value="Predict Size">
+        </form>
+
+       
+        <div id="result" class="result" style="display: none;">
+            
+        </div>
+    </div>
+</body>
+
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Size Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #004494;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f5ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        }
+
+        .result h2 {
+            color: #333;
+        }
+
+        .result p {
+            font-size: 16px;
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            input[type="submit"] {
+                padding: 12px;
+                font-size: 14px;
+            }
+        }
+
+        /* General input styles */
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            width: 100%;
+            /* Ensure full width */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width and height */
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+
+        /* Styling for submit button */
+        input[type="submit"] {
+            background-color: #0056b3;
+            color: #fff;
+            padding: 15px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            /* Ensure full width */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width and height */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #004494;
+        }
+
+        /* Styling for range input */
+        input[type="range"] {
+            background-color: #ddd;
+            height: 8px;
+            border-radius: 4px;
+            width: 100%;
+            /* Ensure full width */
+            box-sizing: border-box;
+            /* Include padding and border in element's total width and height */
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            background-color: #0056b3;
+            border: 1px solid #003d7a;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            background-color: #0056b3;
+            border: 1px solid #003d7a;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .height-display {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        /* Hide element by default */
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script>
+        function validateForm() {
+            var gender = document.getElementById("Gender").value.trim();
+            var height = document.getElementById("HeightSlider").value;
+            var cupSize = document.getElementById("CupSize").value.trim().toUpperCase();
+
+            // Validate gender
+            if (gender === "") {
+                alert("Please select a gender.");
+                return false;
+            }
+
+            if (gender !== "Male" && gender !== "Female") {
+                alert("Please enter 'Male' or 'Female' for gender.");
+                return false;
+            }
+
+            // Validate height format (e.g., 5'7")
+            var heightRegex = /^\d{1,2}'\d{1,2}"$/;
+            if (!heightRegex.test(height)) {
+                alert("Height must be in the format e.g., 5'7\"");
+                return false;
+            }
+
+            // Validate cup size if gender is Female
+            var cupSizeRequired = gender === "Female";
+            var cupSizeRegex = /^[A-Z]$/;
+            if (cupSizeRequired && !cupSizeRegex.test(cupSize)) {
+                alert("If gender is Female, Cup Size must be a single character (A-Z).");
+                return false;
+            }
+
+            // Check if Cup Size field is empty when required
+            if (cupSizeRequired && !cupSize) {
+                alert("Cup Size is required for Female.");
+                return false;
+            }
+
+            // Set formatted values back to the fields
+            document.getElementById("Gender").value = gender;
+            document.getElementById("CupSize").value = cupSize;
+
+            return true;
+        }
+
+        function toggleCupSizeRequirement() {
+            var gender = document.getElementById("Gender").value.trim().toLowerCase();
+            var cupSizeField = document.getElementById("CupSize");
+            var cupSizeLabel = document.getElementById("CupSizeLabel");
+
+            // Capitalize first letter for display
+            document.getElementById("Gender").value = gender.charAt(0).toUpperCase() + gender.slice(1);
+
+            if (gender === "female") {
+                cupSizeField.required = true;
+                cupSizeField.classList.remove('hidden');
+                cupSizeLabel.classList.remove('hidden');
+            } else {
+                cupSizeField.required = false;
+                cupSizeField.classList.add('hidden');
+                cupSizeLabel.classList.add('hidden');
+            }
+        }
+
+        function updateHeightDisplay() {
+            var heightSlider = document.getElementById("HeightSlider");
+            var heightDisplay = document.getElementById("HeightDisplay");
+            var totalInches = heightSlider.value;
+            var feet = Math.floor(totalInches / 12);
+            var inches = totalInches % 12;
+            heightDisplay.textContent = `Height: ${feet}'${inches}"`;
+        }
+
+        function displayResult() {
+            // Example result for demonstration purposes
+            var resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "<h2>Predicted Size</h2><p>Your predicted size is: M (Medium)</p>";
+            resultDiv.style.display = "block";
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Size Predictor</h1>
+        <form action="/predict" method="post" onsubmit="return validateForm()">
+            <label for="Gender">Gender:</label>
+            <select id="Gender" name="Gender" required onchange="toggleCupSizeRequirement()">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+
+            <label for="HeightSlider">Height:</label>
+            <input type="range" id="HeightSlider" name="HeightSlider" min="48" max="84" step="1" value="60"
+                oninput="updateHeightDisplay()">
+            <div id="HeightDisplay" class="height-display">Height: 5'0"</div>
+
+            <label for="Weight">Weight (in kg):</label>
+            <input type="number" step="0.1" id="Weight" name="Weight" required>
+
+            <label for="Bust/Chest">Bust/Chest measurement (in inches):</label>
+            <input type="number" step="0.1" id="Bust/Chest" name="Bust/Chest" required>
+
+            <label id="CupSizeLabel" for="CupSize" class="hidden">Cup Size:</label>
+            <input type="text" id="CupSize" name="CupSize" maxlength="1" pattern="[A-Z]" class="hidden"
+                oninput="this.value = this.value.toUpperCase()">
+
+            <label for="Waist">Waist measurement (in inches, range 20-50):</label>
+            <input type="number" step="0.1" id="Waist" name="Waist" min="20" max="50" required>
+
+            <label for="Hips">Hips measurement (in inches, range 20-50):</label>
+            <input type="number" step="0.1" id="Hips" name="Hips" min="20" max="50" required>
+
+            <label for="Body Shape Index">Body Shape Index (0-4):</label>
+            <input type="number" min="0" max="4" id="BodyShapeIndex" name="BodyShapeIndex" required>
+
+            <input type="submit" value="Predict Size">
+        </form>
+
+        <!-- Output Section -->
+        <div id="result" class="result" style="display: none;">
+            <!-- The result will be displayed here -->
+        </div>
+    </div>
+    <script>
+        // Simulate form submission and display result for demonstration
+        document.querySelector("form").onsubmit = function (event) {
+            event.preventDefault();
+            displayResult();
+        };
+    </script>
+</body>
+
+</html>
